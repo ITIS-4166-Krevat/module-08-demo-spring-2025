@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Checkbox,
@@ -7,6 +8,7 @@ import {
   createTheme,
   CssBaseline,
   IconButton,
+  TextField,
   ThemeProvider,
   Typography,
 } from "@mui/material"
@@ -26,41 +28,44 @@ const darkTheme = createTheme({
   },
 });
 
-const defaultTodos: Todo[] = [
-  {
-    id: 1,
-    name: 'Todo 1',
-    description: 'Description 1',
-    isComplete: false,
-  },
-  {
-    id: 2,
-    name: 'Todo 2',
-    description: 'Description 2',
-    isComplete: true,
-  },
-  {
-    id: 3,
-    name: 'Todo 3',
-    description: 'Description 3',
-    isComplete: false,
-  },
-];
-
 function App() {
-  const [todos, setTodos] = useState<Todo[]>(defaultTodos);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [todoName, setTodoName] = useState('');
+  const [todoDescription, setTodoDescription] = useState('');
+
+  function createTodo() {
+    if (!todoName || !todoDescription) return;
+    const newTodo: Todo = {
+      id: Math.round(Math.random() * 100_000),
+      name: todoName,
+      description: todoDescription,
+      isComplete: false,
+    };
+    setTodos(todos => [...todos, newTodo]);
+    setTodoName('');
+    setTodoDescription('');
+  }
 
   function checkTodo(todoId: number) {
     setTodos(todos => {
-      return todos.map(todo => {
-        if (todo.id !== todoId) {
-          return todo;
+      // return todos.map(todo => {
+      //   if (todo.id !== todoId) {
+      //     return todo;
+      //   }
+      //   return {
+      //     ...todo,
+      //     isComplete: !todo.isComplete,
+      //   };
+      // });
+      const newTodos: Todo[] = [];
+      for (const oldTodo of todos) {
+        if (oldTodo.id !== todoId) {
+          newTodos.push(oldTodo);
+          continue;
         }
-        return {
-          ...todo,
-          isComplete: !todo.isComplete,
-        };
-      });
+        newTodos.push({ ...oldTodo, isComplete: !oldTodo.isComplete });
+      }
+      return newTodos;
     });
   }
 
@@ -74,6 +79,26 @@ function App() {
         <CssBaseline />
         <Container sx={{ mt: 2 }}>
           <Typography variant='h3'>Todo List App</Typography>
+          <Box component='form' sx={{ mb: 4, p: 2 }} onSubmit={e => { e.preventDefault(); createTodo(); }}>
+            <TextField
+              label="Todo Name"
+              required
+              fullWidth
+              value={todoName}
+              onChange={e => setTodoName(e.target.value)}
+            />
+            <TextField
+              label="Description"
+              required
+              multiline
+              maxRows={4}
+              fullWidth
+              sx={{ mt: 2 }}
+              value={todoDescription}
+              onChange={e => setTodoDescription(e.target.value)}
+            />
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create Todo</Button>
+          </Box>
           <Box sx={{ mt: 2 }}>
             {todos.map(todo => (
               <Card sx={{ mb: 2 }}>
